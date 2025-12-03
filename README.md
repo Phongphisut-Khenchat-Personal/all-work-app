@@ -1,16 +1,130 @@
-# React + Vite
+🚀 All Work - ระบบจัดการงานทีมยุคใหม่ (Modern Team Task Management)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+All Work คือเว็บแอปพลิเคชันสำหรับบริหารจัดการงานในทีม (Project Management Tool) ที่เน้นความรวดเร็ว สวยงาม และใช้งานง่าย รองรับการทำงานแบบ Real-time ลาก-วางงานได้ทันที เหมาะสำหรับบริษัทขนาดเล็กหรือทีมพัฒนาซอฟต์แวร์
 
-Currently, two official plugins are available:
+✨ ฟีเจอร์หลัก (Key Features)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+⚡️ Real-time Updates: เห็นความเคลื่อนไหวของเพื่อนร่วมทีมทันทีโดยไม่ต้องรีเฟรชหน้าจอ (ใช้ Supabase Realtime)
 
-## React Compiler
+🖱️ Drag & Drop Kanban: จัดการสถานะงาน (To Do / Doing / Done) ได้ง่ายๆ แค่ลากวางด้วยระบบ dnd-kit
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+👥 Team Collaboration: สร้างทีม เชิญสมาชิก และจัดการสิทธิ์การเข้าถึงได้
 
-## Expanding the ESLint configuration
+🗑️ Interactive Deletion: ลากการ์ดงานหรือทีมไปที่ "ถังขยะ" เพื่อลบ พร้อม Animation สุดลื่นไหล
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🎨 Multi-Theme Support: รองรับ Light Mode, Dark Mode และธีมพิเศษ Pride Month 🏳️‍🌈
+
+📝 Task Details: ใส่รายละเอียดงาน ความสำคัญ (Priority) และกำหนดวันส่งงาน (Due Date) ได้
+
+🔍 Search & Filter: ค้นหางานที่ต้องการได้อย่างรวดเร็ว
+
+👤 Profile Management: แก้ไขข้อมูลส่วนตัว ชื่อ นามสกุล และตำแหน่งงาน
+
+🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
+
+Frontend: React (Vite)
+
+Styling: Tailwind CSS
+
+UI Components: Shadcn UI (Radix UI base)
+
+Icons: Lucide React
+
+Drag & Drop: @dnd-kit/core
+
+Backend & Database: Supabase (PostgreSQL)
+
+Authentication: Supabase Auth
+
+Deployment: Vercel
+
+🚀 วิธีการติดตั้งและรันโปรเจกต์ (Getting Started)
+
+ทำตามขั้นตอนด้านล่างเพื่อรันโปรเจกต์ในเครื่องของคุณ
+
+1. โคลนโปรเจกต์ (Clone Repository)
+
+git clone [https://github.com/your-username/all-work-app.git](https://github.com/your-username/all-work-app.git)
+cd all-work-app
+
+
+2. ติดตั้ง Dependencies
+
+npm install
+
+
+3. ตั้งค่า Environment Variables
+
+สร้างไฟล์ .env ที่ root folder และใส่ค่า API Key จาก Supabase ของคุณ:
+
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_KEY=your_supabase_anon_key
+
+
+4. ตั้งค่าฐานข้อมูล (Database Setup)
+
+ไปที่ Supabase SQL Editor และรันคำสั่ง SQL ต่อไปนี้เพื่อสร้างตาราง:
+
+<details>
+<summary>👇 คลิกเพื่อดูโค้ด SQL สำหรับสร้างตาราง</summary>
+
+-- 1. ตาราง Profiles (ข้อมูลผู้ใช้)
+create table public.profiles (
+  id uuid references auth.users not null primary key,
+  email text,
+  display_name text,
+  first_name text,
+  last_name text,
+  position text,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+-- 2. ตาราง Teams (ทีมงาน)
+create table public.teams (
+  id bigint generated by default as identity primary key,
+  name text not null,
+  created_at timestamp with time zone default now()
+);
+
+-- 3. ตาราง Team Members (สมาชิกในทีม)
+create table public.team_members (
+  id bigint generated by default as identity primary key,
+  team_id bigint references public.teams(id) on delete cascade not null,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  role text check (role in ('owner', 'member')) default 'member',
+  joined_at timestamp with time zone default now(),
+  unique(team_id, user_id)
+);
+
+-- 4. ตาราง Tasks (งาน)
+create table public.tasks (
+  id bigint generated by default as identity primary key,
+  title text not null,
+  description text,
+  status text default 'todo',
+  priority text default 'medium',
+  due_date timestamp with time zone,
+  team_id bigint references public.teams(id) on delete cascade,
+  assignee_id uuid references public.profiles(id),
+  created_at timestamp with time zone default now()
+);
+
+-- 5. เปิด Realtime (สำคัญ!)
+alter publication supabase_realtime add table tasks;
+alter publication supabase_realtime add table teams;
+
+
+</details>
+
+5. รันโปรเจกต์!
+
+npm run dev
+
+
+เปิด Browser ไปที่ https://all-work-app.vercel.app/ เพื่อเริ่มใช้งาน
+
+📸 ภาพตัวอย่าง 
+
+<img width="2560" height="1440" alt="image" src="https://github.com/user-attachments/assets/b16ff12a-b1c3-487c-820f-8fdd794bf944" />
+
