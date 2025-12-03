@@ -1,73 +1,122 @@
-🚀 All Work - ระบบจัดการงานทีมยุคใหม่ (Modern Team Task Management)
+<div align="center">
 
-All Work คือเว็บแอปพลิเคชันสำหรับบริหารจัดการงานในทีม (Project Management Tool) ที่เน้นความรวดเร็ว สวยงาม และใช้งานง่าย รองรับการทำงานแบบ Real-time ลาก-วางงานได้ทันที เหมาะสำหรับบริษัทขนาดเล็กหรือทีมพัฒนาซอฟต์แวร์
+# All Work
 
-✨ ฟีเจอร์หลัก (Key Features)
+### ระบบจัดการงานทีม
 
-⚡️ Real-time Updates: เห็นความเคลื่อนไหวของเพื่อนร่วมทีมทันทีโดยไม่ต้องรีเฟรชหน้าจอ (ใช้ Supabase Realtime)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
-🖱️ Drag & Drop Kanban: จัดการสถานะงาน (To Do / Doing / Done) ได้ง่ายๆ แค่ลากวางด้วยระบบ dnd-kit
+**เว็บแอปพลิเคชันสำหรับบริหารจัดการงานในทีม (Project Management Tool) ที่เน้นความรวดเร็ว สวยงาม และใช้งานง่าย**
 
-👥 Team Collaboration: สร้างทีม เชิญสมาชิก และจัดการสิทธิ์การเข้าถึงได้
 
-🗑️ Interactive Deletion: ลากการ์ดงานหรือทีมไปที่ "ถังขยะ" เพื่อลบ พร้อม Animation สุดลื่นไหล
+</div>
 
-🎨 Multi-Theme Support: รองรับ Light Mode, Dark Mode และธีมพิเศษ Pride Month 🏳️‍🌈
+---
 
-📝 Task Details: ใส่รายละเอียดงาน ความสำคัญ (Priority) และกำหนดวันส่งงาน (Due Date) ได้
+## ✨ Key Features
 
-🔍 Search & Filter: ค้นหางานที่ต้องการได้อย่างรวดเร็ว
+<table>
+<tr>
+<td width="50%">
 
-👤 Profile Management: แก้ไขข้อมูลส่วนตัว ชื่อ นามสกุล และตำแหน่งงาน
+### ⚡ Real-time Updates
+เห็นความเคลื่อนไหวของเพื่อนร่วมทีมทันทีโดยไม่ต้องรีเฟรชหน้าจอ ขับเคลื่อนด้วย Supabase Realtime
 
-🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
+### 🎯 Drag & Drop Kanban
+จัดการสถานะงาน (To Do / Doing / Done) ได้ง่ายๆ แค่ลากวางด้วยระบบ dnd-kit
 
-Frontend: React (Vite)
+### 👥 Team Collaboration
+สร้างทีม เชิญสมาชิก และจัดการสิทธิ์การเข้าถึงได้
 
-Styling: Tailwind CSS
+### 🗑️ Interactive Deletion
+ลากการ์ดงานหรือทีมไปที่ "ถังขยะ" เพื่อลบ พร้อม Animation สุดลื่นไหล
 
-UI Components: Shadcn UI (Radix UI base)
+</td>
+<td width="50%">
 
-Icons: Lucide React
+### 🎨 Multi-Theme Support
+รองรับ Light Mode, Dark Mode และธีมพิเศษ Pride Month 🏳️‍🌈
 
-Drag & Drop: @dnd-kit/core
+### 📝 Task Management
+ใส่รายละเอียดงาน ความสำคัญ (Priority) และกำหนดวันส่งงาน (Due Date)
 
-Backend & Database: Supabase (PostgreSQL)
+### 🔍 Search & Filter
+ค้นหางานที่ต้องการได้อย่างรวดเร็ว
 
-Authentication: Supabase Auth
+### 👤 Profile Management
+แก้ไขข้อมูลส่วนตัว ชื่อ นามสกุล และตำแหน่งงาน
 
-Deployment: Vercel
+</td>
+</tr>
+</table>
 
-🚀 วิธีการติดตั้งและรันโปรเจกต์ (Getting Started)
+---
 
-ทำตามขั้นตอนด้านล่างเพื่อรันโปรเจกต์ในเครื่องของคุณ
+## 🛠️ Tech Stack
 
-1. โคลนโปรเจกต์ (Clone Repository)
+<div align="center">
 
-git clone [https://github.com/your-username/all-work-app.git](https://github.com/your-username/all-work-app.git)
+| Category | Technology |
+|----------|-----------|
+| **Frontend Framework** | React (Vite) |
+| **Styling** | Tailwind CSS |
+| **UI Components** | Shadcn UI (Radix UI base) |
+| **Icons** | Lucide React |
+| **Drag & Drop** | @dnd-kit/core |
+| **Backend & Database** | Supabase (PostgreSQL) |
+| **Authentication** | Supabase Auth |
+| **Deployment** | Vercel |
+
+</div>
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+ตรวจสอบให้แน่ใจว่าคุณได้ติดตั้งสิ่งต่อไปนี้แล้ว:
+
+- Node.js (v16 หรือสูงกว่า)
+- npm หรือ yarn
+- Supabase Account
+
+### Installation
+
+**1. Clone Repository**
+
+```bash
+git clone https://github.com/your-username/all-work-app.git
 cd all-work-app
+```
 
+**2. Install Dependencies**
 
-2. ติดตั้ง Dependencies
-
+```bash
 npm install
+```
 
+**3. Environment Variables**
 
-3. ตั้งค่า Environment Variables
+สร้างไฟล์ `.env` ที่ root folder และเพิ่มค่าต่อไปนี้:
 
-สร้างไฟล์ .env ที่ root folder และใส่ค่า API Key จาก Supabase ของคุณ:
-
+```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_KEY=your_supabase_anon_key
+```
 
+**4. Database Setup**
 
-4. ตั้งค่าฐานข้อมูล (Database Setup)
-
-ไปที่ Supabase SQL Editor และรันคำสั่ง SQL ต่อไปนี้เพื่อสร้างตาราง:
+ไปที่ Supabase SQL Editor และรันคำสั่ง SQL ต่อไปนี้:
 
 <details>
-<summary>👇 คลิกเพื่อดูโค้ด SQL สำหรับสร้างตาราง</summary>
+<summary>📋 คลิกเพื่อดูโค้ด SQL</summary>
 
+```sql
 -- 1. ตาราง Profiles (ข้อมูลผู้ใช้)
 create table public.profiles (
   id uuid references auth.users not null primary key,
@@ -113,18 +162,45 @@ create table public.tasks (
 -- 5. เปิด Realtime (สำคัญ!)
 alter publication supabase_realtime add table tasks;
 alter publication supabase_realtime add table teams;
-
+```
 
 </details>
 
-5. รันโปรเจกต์!
+**5. Run Development Server**
 
+```bash
 npm run dev
+```
+
+เปิด browser และไปที่ `https://all-work-app.vercel.app/`
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/b16ff12a-b1c3-487c-820f-8fdd794bf944" alt="All Work Screenshot" width="100%"/>
+</div>
+
+---
+
+## 📦 Project Structure
+
+```
+all-work-app/
+├── src/
+│   ├── components/      # React components
+│   ├── lib/            # Utilities & configurations
+│   ├── pages/          # Page components
+│   └── App.jsx         # Main app component
+├── public/             # Static assets
+├── .env                # Environment variables
+└── package.json        # Dependencies
+```
+
+---
 
 
-เปิด Browser ไปที่ https://all-work-app.vercel.app/ เพื่อเริ่มใช้งาน
+**Made with ❤️ in Thailand**
 
-📸 ภาพตัวอย่าง 
-
-<img width="2560" height="1440" alt="image" src="https://github.com/user-attachments/assets/b16ff12a-b1c3-487c-820f-8fdd794bf944" />
-
+</div>
