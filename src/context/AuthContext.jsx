@@ -19,10 +19,10 @@ export const AuthProvider = ({ children }) => {
       return null
     }
 
+    const { data: sessionData } = await supabase.auth.getUser()
+    const email = sessionData?.user?.email
     const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
     if (!data) {
-      const { data: sessionData } = await supabase.auth.getUser()
-      const email = sessionData?.user?.email
       await supabase.from('profiles').upsert({
         id: userId,
         email,
@@ -31,6 +31,11 @@ export const AuthProvider = ({ children }) => {
       const { data: created } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
       setProfile(created)
       return created
+    }
+
+    if (email && !data.email) {
+      await supabase.from('profiles').update({ email }).eq('id', userId)
+      data.email = email
     }
 
     setProfile(data)

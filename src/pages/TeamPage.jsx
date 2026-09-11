@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { ProfileSettingsModal } from "@/components/ProfileSettingsModal"
 import { getInitials } from '@/lib/utils'
+import { createTeamWithOwner, ensureTeamMembership } from '@/lib/boardApi'
 import { Label } from "@/components/ui/label"
 
 function DeleteZoneTeam({ activeId }) {
@@ -119,6 +120,7 @@ export default function TeamPage() {
 
   async function fetchTeams() {
     setLoadingTeams(true)
+    await ensureTeamMembership(user.id)
     const { data, error } = await supabase
       .from('team_members')
       .select('role, team:teams(*)')
@@ -149,7 +151,7 @@ export default function TeamPage() {
     }
 
     setCreating(true)
-    const { error } = await supabase.from('teams').insert([{ name: newTeamName.trim() }])
+    const { error } = await createTeamWithOwner(newTeamName.trim(), user.id)
     setCreating(false)
 
     if (!error) {

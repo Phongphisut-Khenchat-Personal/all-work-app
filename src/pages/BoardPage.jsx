@@ -18,7 +18,19 @@ import { toast } from "sonner"
 import { TaskDetailModal } from "@/components/TaskDetailModal"
 import { TeamSettingsModal } from "@/components/TeamSettingsModal"
 import { ProfileSettingsModal } from "@/components/ProfileSettingsModal"
-import { getInitials, DEFAULT_BOARD_COLUMNS } from '@/lib/utils'
+import { getInitials } from '@/lib/utils'
+import {
+    loadColumns,
+    taskBoardKey,
+    keysMatch,
+    insertTask,
+    moveTask,
+    addColumn,
+    renameColumn,
+    deleteColumnRecord,
+    moveTasksToColumn,
+    ensureTeamMembership,
+} from '@/lib/boardApi'
 
 function DeleteZone({ activeId }) {
     const { isOver, setNodeRef } = useDroppable({ id: 'trash-zone' })
@@ -212,6 +224,7 @@ export default function BoardPage() {
     const [myRole, setMyRole] = useState(null)
     const [profiles, setProfiles] = useState([])
     const [columns, setColumns] = useState([])
+    const [boardMode, setBoardMode] = useState('status')
     const [tasks, setTasks] = useState([])
     const [searchQuery, setSearchQuery] = useState('')
     const [assigneeFilter, setAssigneeFilter] = useState('all')
@@ -260,6 +273,8 @@ export default function BoardPage() {
         (columnToDelete.taskCount === 0 || !!moveToColumnId)
 
     const fetchData = useCallback(async () => {
+        await ensureTeamMembership(user.id)
+
         const { data: membership, error: memberError } = await supabase
             .from('team_members')
             .select('role')
@@ -299,29 +314,6 @@ export default function BoardPage() {
         }
         setProfiles(members?.map(m => m.profiles).filter(Boolean) || [])
 
-        let { data: columnData, error: columnError } = await supabase
-            .from('board_columns')
-            .select('*')
-            .eq('team_id', teamId)
-            .order('position')
-
-        if (columnError) {
-            toast.error('โหลดกระดานไม่สำเร็จ: ' + columnError.message, {
-                description: 'ลองรันไฟล์ supabase/schema.sql ใน SQL Editor',
-            })
-            setColumns([])
-        } else if (!columnData?.length) {
-            const seed = DEFAULT_BOARD_COLUMNS.map(col => ({ ...col, team_id: Number(teamId) }))
-            const { data: seeded, error: seedError } = await supabase.from('board_columns').insert(seed).select()
-            if (seedError) {
-                toast.error('สร้างกระดานเริ่มต้นไม่สำเร็จ: ' + seedError.message)
-                columnData = []
-            } else {
-                columnData = seeded
-            }
-        }
-        setColumns(columnData || [])
-
         const { data: tasksData, error: tasksError } = await supabase
             .from('tasks')
             .select('*')
@@ -335,6 +327,9 @@ export default function BoardPage() {
             setTasks(tasksData || [])
         }
 
+        const board = await loadColumns(teamId, tasksData || [])
+        setBoardMode(board.mode)
+        setColumns(board.columns)
         setAccessState('ok')
     }, [teamId, user.id, navigate])
 
@@ -355,20 +350,16 @@ export default function BoardPage() {
     }, [teamId, user, fetchData])
 
     async function handleAddTask(columnId, title) {
+        const column = columns.find(c => keysMatch(c.id, columnId))
+        if (!column) return
         setAdding(true)
-        const { data, error } = await supabase
-            .from('tasks')
-            .insert([{
-                title,
-                column_id: columnId,
-                assignee_id: user.id,
-                created_by: user.id,
-                team_id: teamId,
-                priority: 'medium',
-                status: 'todo',
-            }])
-            .select()
-            .single()
+        const { data, error } = await insertTask({
+            title,
+            teamId,
+            userId: user.id,
+            column,
+            mode: boardMode,
+        })
         setAdding(false)
 
         if (error) {
@@ -380,9 +371,11 @@ export default function BoardPage() {
     }
 
     async function handleMoveTask(taskId, columnId) {
+        const column = columns.find(c => keysMatch(c.id, columnId))
         const previous = tasks.find(t => t.id === taskId)
-        setTasks(prev => prev.map(t => t.id === taskId ? { ...t, column_id: columnId } : t))
-        const { error } = await supabase.from('tasks').update({ column_id: columnId }).eq('id', taskId)
+        if (!column || !previous) return
+        setTasks(prev => prev.map(t => t.id === taskId ? { ...t, column_id: column.id, status: String(column.id) } : t))
+        const { error } = await moveTask(taskId, column, boardMode)
         if (error) {
             setTasks(prev => prev.map(t => t.id === taskId ? previous : t))
             toast.error("ย้ายงานไม่สำเร็จ: " + error.message)
@@ -402,12 +395,18 @@ export default function BoardPage() {
     }
 
     async function handleRenameColumn(columnId, name) {
+        const column = columns.find(c => keysMatch(c.id, columnId))
+        if (!column) return
         const previous = columns
-        setColumns(prev => prev.map(c => c.id === columnId ? { ...c, name } : c))
-        const { error } = await supabase.from('board_columns').update({ name }).eq('id', columnId)
+        setColumns(prev => prev.map(c => keysMatch(c.id, columnId) ? { ...c, name } : c))
+        const { error } = await renameColumn(column, name, boardMode, teamId)
         if (error) {
             setColumns(previous)
             toast.error("เปลี่ยนชื่อไม่สำเร็จ: " + error.message)
+            return
+        }
+        if (boardMode === 'status') {
+            fetchData()
         }
     }
 
@@ -416,12 +415,7 @@ export default function BoardPage() {
         const name = newColumnName.trim()
         if (!name) return
         setAddingColumn(true)
-        const nextPos = (columns[columns.length - 1]?.position ?? -1) + 1
-        const { data, error } = await supabase
-            .from('board_columns')
-            .insert([{ team_id: Number(teamId), name, position: nextPos }])
-            .select()
-            .single()
+        const { data, error } = await addColumn(teamId, name, boardMode, columns)
         setAddingColumn(false)
         if (error) {
             toast.error("เพิ่มกระดานไม่สำเร็จ: " + error.message)
@@ -434,26 +428,24 @@ export default function BoardPage() {
 
     async function handleDeleteColumn() {
         if (!canConfirmDeleteColumn) return
-        const targetId = columnToDelete.id
-        const taskIds = tasks.filter(t => t.column_id === targetId).map(t => t.id)
+        const target = columnToDelete
+        const taskIds = tasks.filter(t => keysMatch(taskBoardKey(t), target.id)).map(t => t.id)
+        const destination = columns.find(c => keysMatch(c.id, moveToColumnId))
 
-        if (taskIds.length && moveToColumnId) {
-            const { error: moveError } = await supabase
-                .from('tasks')
-                .update({ column_id: Number(moveToColumnId) })
-                .in('id', taskIds)
+        if (taskIds.length && destination) {
+            const { error: moveError } = await moveTasksToColumn(taskIds, destination, boardMode)
             if (moveError) {
                 toast.error("ย้ายงานก่อนลบไม่สำเร็จ: " + moveError.message)
                 return
             }
         }
 
-        const { error } = await supabase.from('board_columns').delete().eq('id', targetId)
+        const { error } = await deleteColumnRecord(target, boardMode, teamId)
         if (error) {
             toast.error("ลบกระดานไม่สำเร็จ: " + error.message)
             return
         }
-        toast.success(`ลบกระดาน “${columnToDelete.name}” แล้ว`)
+        toast.success(`ลบกระดาน “${target.name}” แล้ว`)
         setColumnToDelete(null)
         setConfirmColumnName('')
         setMoveToColumnId('')
@@ -596,7 +588,7 @@ export default function BoardPage() {
                                 column={column}
                                 members={profiles}
                                 adding={adding}
-                                tasks={filteredTasks.filter(t => t.column_id === column.id)}
+                                tasks={filteredTasks.filter(t => keysMatch(taskBoardKey(t), column.id))}
                                 onTaskClick={(task) => { setSelectedTask(task); setIsTaskModalOpen(true) }}
                                 onAddTask={handleAddTask}
                                 onRename={handleRenameColumn}
@@ -605,7 +597,7 @@ export default function BoardPage() {
                                         toast.error('ต้องเหลืออย่างน้อย 1 กระดาน')
                                         return
                                     }
-                                    const taskCount = tasks.filter(t => t.column_id === col.id).length
+                                    const taskCount = tasks.filter(t => keysMatch(taskBoardKey(t), col.id)).length
                                     setColumnToDelete({ ...col, taskCount })
                                     setConfirmColumnName('')
                                     setMoveToColumnId(String(columns.find(c => c.id !== col.id)?.id || ''))
@@ -716,6 +708,7 @@ export default function BoardPage() {
                 onUpdate={fetchData}
                 members={profiles}
                 columns={columns}
+                boardMode={boardMode}
             />
 
             <TeamSettingsModal

@@ -11,6 +11,7 @@ import { UserPlus, Mail, Shield, User, Briefcase, LogOut, MoreHorizontal, UserMi
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from "sonner"
 import { getInitials } from '@/lib/utils'
+import { inviteMember, leaveTeam } from '@/lib/boardApi'
 
 export function TeamSettingsModal({ teamId, isOpen, onClose, isOwner, currentUserId, onChanged }) {
     const [email, setEmail] = useState('')
@@ -47,10 +48,7 @@ export function TeamSettingsModal({ teamId, isOpen, onClose, isOwner, currentUse
         if (!email.trim()) return
         setLoading(true)
 
-        const { error } = await supabase.rpc('invite_member_by_email', {
-            p_team_id: Number(teamId),
-            p_email: email.trim(),
-        })
+        const { error } = await inviteMember(teamId, email.trim())
 
         if (!error) {
             toast.success(`เพิ่ม ${email} เข้าทีมแล้ว!`)
@@ -87,7 +85,7 @@ export function TeamSettingsModal({ teamId, isOpen, onClose, isOwner, currentUse
 
     async function handleLeave() {
         if (leaveConfirm.trim() !== 'ออกจากทีม') return
-        const { error } = await supabase.rpc('leave_team', { p_team_id: Number(teamId) })
+        const { error } = await leaveTeam(teamId, currentUserId)
         if (error) {
             toast.error("ออกจากทีมไม่สำเร็จ: " + error.message)
             return

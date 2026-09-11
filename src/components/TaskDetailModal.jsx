@@ -13,7 +13,7 @@ import { th } from "date-fns/locale"
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from "sonner"
 
-export function TaskDetailModal({ task, isOpen, onClose, onUpdate, members = [], columns = [] }) {
+export function TaskDetailModal({ task, isOpen, onClose, onUpdate, members = [], columns = [], boardMode = 'status' }) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             {task ? (
@@ -24,17 +24,18 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate, members = [],
                     onUpdate={onUpdate}
                     members={members}
                     columns={columns}
+                    boardMode={boardMode}
                 />
             ) : null}
         </Dialog>
     )
 }
 
-function TaskDetailForm({ task, onClose, onUpdate, members, columns }) {
+function TaskDetailForm({ task, onClose, onUpdate, members, columns, boardMode }) {
     const [title, setTitle] = useState(task.title || '')
     const [description, setDescription] = useState(task.description || '')
     const [priority, setPriority] = useState(task.priority || 'medium')
-    const [columnId, setColumnId] = useState(String(task.column_id || columns[0]?.id || ''))
+    const [columnId, setColumnId] = useState(String(task.column_id ?? task.status ?? columns[0]?.id ?? ''))
     const [assigneeId, setAssigneeId] = useState(task.assignee_id || 'unassigned')
     const [dueDate, setDueDate] = useState(task.due_date ? new Date(task.due_date) : undefined)
     const [loading, setLoading] = useState(false)
@@ -48,17 +49,19 @@ function TaskDetailForm({ task, onClose, onUpdate, members, columns }) {
             return
         }
         setLoading(true)
-        const { error } = await supabase
-            .from('tasks')
-            .update({
-                title: title.trim(),
-                description,
-                priority,
-                column_id: columnId ? Number(columnId) : task.column_id,
-                assignee_id: assigneeId === 'unassigned' ? null : assigneeId,
-                due_date: dueDate ? dueDate.toISOString() : null,
-            })
-            .eq('id', task.id)
+        const updates = {
+            title: title.trim(),
+            description,
+            priority,
+            assignee_id: assigneeId === 'unassigned' ? null : assigneeId,
+            due_date: dueDate ? dueDate.toISOString() : null,
+        }
+        if (boardMode === 'db') {
+            updates.column_id = columnId ? Number(columnId) : task.column_id
+        } else {
+            updates.status = columnId
+        }
+        const { error } = await supabase.from('tasks').update(updates).eq('id', task.id)
 
         setLoading(false)
         if (!error) {
