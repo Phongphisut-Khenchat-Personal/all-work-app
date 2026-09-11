@@ -2,162 +2,407 @@
 
 # All Work
 
-### ระบบจัดการงานทีม
+### ระบบจัดการงานทีมแบบเรียลไทม์
 
-[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-all--work--app.vercel.app-000?style=for-the-badge&logo=vercel&logoColor=white)](https://all-work-app.vercel.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-all--work--app-181717?style=for-the-badge&logo=github)](https://github.com/Phongphisut-Khenchat-Personal/all-work-app)
+
+[![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2F2?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
-**เว็บแอปพลิเคชันสำหรับบริหารจัดการงานในทีม (Project Management Tool) ที่เน้นความรวดเร็ว สวยงาม และใช้งานง่าย**
+เว็บแอปสำหรับทีมที่อยากสร้างบอร์ดงานร่วมกัน เชิญเพื่อน ลากการ์ดย้ายสถานะ และเห็นอัปเดตทันทีโดยไม่ต้องรีเฟรช
 
+[ทดลองใช้เลย](https://all-work-app.vercel.app/) · [โคลนโปรเจกต์](https://github.com/Phongphisut-Khenchat-Personal/all-work-app)
 
 </div>
 
 ---
 
-## ✨ Key Features
+## สารบัญ
+
+- [ลิงก์ทดลอง](#-ลิงก์ทดลอง)
+- [แอปนี้ทำอะไร](#-แอปนี้ทำอะไร)
+- [ฟีเจอร์](#-ฟีเจอร์)
+- [วิธีการใช้งาน](#-วิธีการใช้งาน)
+- [เครื่องมือและเทคสแตก](#️-เครื่องมือและเทคสแตก)
+- [โครงสร้างโปรเจกต์](#-โครงสร้างโปรเจกต์)
+- [เส้นทางในแอป](#-เส้นทางในแอป)
+- [ติดตั้งและรันเอง](#-ติดตั้งและรันเอง)
+- [ฐานข้อมูล](#-ฐานข้อมูล)
+- [ดีพลอย](#-ดีพลอย)
+- [แก้ปัญหาที่พบบ่อย](#-แก้ปัญหาที่พบบ่อย)
+
+---
+
+## ลิงก์ทดลอง
+
+| สิ่งที่ต้องการ | ลิงก์ |
+| --- | --- |
+| **เว็บทดลอง (Production)** | [https://all-work-app.vercel.app/](https://all-work-app.vercel.app/) |
+| **ซอร์สโค้ด** | [github.com/Phongphisut-Khenchat-Personal/all-work-app](https://github.com/Phongphisut-Khenchat-Personal/all-work-app) |
+| **รันบนเครื่องตัวเอง** | `http://localhost:5173` หลัง `npm run dev` |
+
+> ทดลองบนเว็บจริงได้เลย สมัครด้วยอีเมล แล้วตรวจกล่องจดหมายเพื่อยืนยันบัญชีก่อนเข้าสู่ระบบ
+
+---
+
+## แอปนี้ทำอะไร
+
+All Work เป็นบอร์ดงานแบบคัมบังสำหรับทีม
+
+1. สมัครสมาชิกด้วยอีเมล
+2. สร้างทีมของตัวเอง (คุณเป็นเจ้าของทีม)
+3. เชิญเพื่อนด้วยอีเมลที่ใช้สมัครไว้แล้ว
+4. เปิดบอร์ดของทีม เพิ่มงาน ลากย้าย แก้รายละเอียด หรือลบได้ทั้งทีม
+5. เพิ่มกระดานเองได้ เช่น Review, Blocked, รอทดสอบ
+
+ทุกคนในทีมเห็นงานชุดเดียวกัน และเห็นการเปลี่ยนแปลงแบบเรียลไทม์
+
+---
+
+## ฟีเจอร์
 
 <table>
 <tr>
 <td width="50%">
 
-### ⚡ Real-time Updates
-เห็นความเคลื่อนไหวของเพื่อนร่วมทีมทันทีโดยไม่ต้องรีเฟรชหน้าจอ ขับเคลื่อนด้วย Supabase Realtime
+### บัญชีและความปลอดภัย
 
-### 🎯 Drag & Drop Kanban
-จัดการสถานะงาน (To Do / Doing / Done) ได้ง่ายๆ แค่ลากวางด้วยระบบ dnd-kit
+- สมัคร / เข้าสู่ระบบด้วยอีเมลและรหัสผ่าน
+- ลืมรหัสผ่าน และตั้งรหัสผ่านใหม่จากลิงก์ในอีเมล
+- ถ้าล็อกอินอยู่แล้ว จะถูกพาออกจากหน้า login อัตโนมัติ
+- หน้าทีมและบอร์ดต้องล็อกอินก่อนเข้า
 
-### 👥 Team Collaboration
-สร้างทีม เชิญสมาชิก และจัดการสิทธิ์การเข้าถึงได้
+### ทีม
 
-### 🗑️ Interactive Deletion
-ลากการ์ดงานหรือทีมไปที่ "ถังขยะ" เพื่อลบ พร้อม Animation สุดลื่นไหล
+- สร้างทีมได้ไม่จำกัด
+- เจ้าของทีมเชิญสมาชิกด้วยอีเมล
+- นำสมาชิกออกได้ (บัญชียังใช้ได้ แค่ไม่ได้อยู่ในทีม)
+- สมาชิกออกจากทีมเองได้
+- ลบทีมได้เฉพาะเจ้าของ พร้อมพิมพ์ชื่อทีมยืนยัน
+- ลบทีมแล้วงานและสมาชิกของทีมนั้นถูกลบด้วย
 
 </td>
 <td width="50%">
 
-### 🎨 Multi-Theme Support
-รองรับ Light Mode, Dark Mode และธีมพิเศษ Pride Month 🏳️‍🌈
+### บอร์ดงาน
 
-### 📝 Task Management
-ใส่รายละเอียดงาน ความสำคัญ (Priority) และกำหนดวันส่งงาน (Due Date)
+- กระดานเริ่มต้น: **To Do / Doing / Done**
+- เพิ่ม เปลี่ยนชื่อ ลบกระดานได้
+- ลากการ์ดย้ายกระดานด้วยเมาส์หรือนิ้ว
+- ลากงานไปถังขยะเพื่อลบ (มีหน้าต่างยืนยัน)
+- ใส่ความสำคัญ วันส่ง ผู้รับผิดชอบ และรายละเอียด
+- ค้นหาชื่องาน และกรองตามผู้รับผิดชอบ
+- เพื่อนในทีมสร้าง แก้ ย้าย ลบงานของกันได้
 
-### 🔍 Search & Filter
-ค้นหางานที่ต้องการได้อย่างรวดเร็ว
+### ประสบการณ์ใช้งาน
 
-### 👤 Profile Management
-แก้ไขข้อมูลส่วนตัว ชื่อ นามสกุล และตำแหน่งงาน
+- อัปเดตสดผ่าน Supabase Realtime
+- ธีมสว่าง / มืด / ตามระบบ / Pride Month
+- รองรับมือถือและเดสก์ท็อป
+- แจ้งเตือนด้วยข้อความภาษาไทย
 
 </td>
 </tr>
 </table>
 
----
-
-## 🛠️ Tech Stack
-
 <div align="center">
-
-| Category | Technology |
-|----------|-----------|
-| **Frontend Framework** | React (Vite) |
-| **Styling** | Tailwind CSS |
-| **UI Components** | Shadcn UI (Radix UI base) |
-| **Icons** | Lucide React |
-| **Drag & Drop** | @dnd-kit/core |
-| **Backend & Database** | Supabase (PostgreSQL) |
-| **Authentication** | Supabase Auth |
-| **Deployment** | Vercel |
-
+  <img src="https://github.com/user-attachments/assets/b16ff12a-b1c3-487c-820f-8fdd794bf944" alt="หน้าจอ All Work" width="100%"/>
+  <p><sub>ตัวอย่างหน้าบอร์ดงานทีม</sub></p>
 </div>
 
 ---
 
-## 🚀 Getting Started
+## วิธีการใช้งาน
 
-### Prerequisites
+### 1) สมัครและเข้าสู่ระบบ
 
-ตรวจสอบให้แน่ใจว่าคุณได้ติดตั้งสิ่งต่อไปนี้แล้ว:
+1. เปิด [https://all-work-app.vercel.app/](https://all-work-app.vercel.app/)
+2. กดสมัครสมาชิก กรอกอีเมล รหัสผ่าน (อย่างน้อย 6 ตัว) ชื่อ และตำแหน่ง
+3. ตรวจอีเมลแล้วยืนยันบัญชี
+4. กลับมาเข้าสู่ระบบ
 
-- Node.js (v16 หรือสูงกว่า)
-- npm หรือ yarn
-- Supabase Account
+ถ้าลืมรหัสผ่าน กดลืมรหัสผ่าน แล้วตั้งรหัสใหม่จากลิงก์ในอีเมล
 
-### Installation
+### 2) สร้างทีม
 
-**1. Clone Repository**
+1. ที่หน้าแรก พิมพ์ชื่อทีมแล้วกดสร้าง
+2. คนสร้างเป็น **เจ้าของทีม** อัตโนมัติ
+3. คลิกการ์ดทีมเพื่อเข้าบอร์ด
+
+### 3) เชิญเพื่อนเข้าทีม
+
+1. ในบอร์ด กดไอคอนตั้งค่าทีม
+2. พิมพ์อีเมลของเพื่อนที่ **สมัคร All Work ไว้แล้ว**
+3. เพื่อนคนนั้นจะเห็นทีมนี้ในหน้าแรกทันที
+
+> เชิญได้เฉพาะอีเมลที่มีบัญชีในระบบแล้ว เพราะระบบค้นหาจากโปรไฟล์ที่มีอยู่
+
+เจ้าของทีมนำสมาชิกออกได้โดยพิมพ์ชื่อหรืออีเมลเพื่อยืนยัน  
+สมาชิกทั่วไปออกจากทีมเองได้ แต่ลบทีมไม่ได้
+
+### 4) จัดการงานบนบอร์ด
+
+| ต้องการทำ | วิธีทำ |
+| --- | --- |
+| เพิ่มงาน | พิมพ์ชื่องานใต้กระดานแล้วกด `+` |
+| ย้ายงาน | ลากการ์ดไปวางที่กระดานอื่น |
+| เปิดรายละเอียด | คลิกการ์ด แล้วแก้ชื่อ รายละเอียด ความสำคัญ วันส่ง ผู้รับผิดชอบ กระดาน |
+| ลบงาน | ลากไปถังขยะมุมขวาล่าง หรือลบจากหน้าต่างรายละเอียด |
+| ค้นหา / กรอง | ช่องค้นหาด้านบน และตัวกรองผู้รับผิดชอบ |
+
+### 5) จัดการกระดาน
+
+- **เพิ่มกระดาน:** กรอกชื่อทางขวาสุดของบอร์ด เช่น `Review`
+- **เปลี่ยนชื่อ:** ดับเบิลคลิกชื่อกระดาน หรือเมนู `⋯`
+- **ลบกระดาน:** ต้องเหลืออย่างน้อย 1 กระดาน ถ้ามีงานอยู่ต้องย้ายไปกระดานอื่นก่อน แล้วพิมพ์ชื่อกระดานเพื่อยืนยัน
+
+### 6) ลบทีม
+
+เฉพาะเจ้าของทีม ลากการ์ดทีมไปถังขยะ แล้วพิมพ์ชื่อทีมให้ตรงจึงลบได้  
+การลบทีมจะลบงานและรายชื่อสมาชิกของทีมนั้นด้วย **กู้คืนไม่ได้**
+
+### 7) โปรไฟล์และธีม
+
+- กดรูปโปรไฟล์ → ข้อมูลส่วนตัว เพื่อแก้ชื่อและตำแหน่ง
+- ปุ่มพระอาทิตย์/พระจันทร์ สลับธีม สว่าง มืด ตามระบบ หรือ Pride Month
+
+---
+
+## เครื่องมือและเทคสแตก
+
+### ฝั่งหน้าเว็บ
+
+| เครื่องมือ | ใช้ทำอะไร |
+| --- | --- |
+| **React 19** | สร้างหน้าและคอมโพเนนต์ |
+| **Vite (Rolldown)** | รัน dev server และ build |
+| **React Router DOM 7** | เส้นทาง `/login`, `/`, `/board/:teamId` |
+| **Tailwind CSS 3** | สไตล์ทั้งแอป |
+| **shadcn/ui + Radix UI** | ปุ่ม ไดอะล็อก เมนู ปฏิทิน ฯลฯ |
+| **Lucide React** | ไอคอน |
+| **@dnd-kit** | ลากวางงานและทีม |
+| **next-themes** | สลับธีม |
+| **Sonner** | ข้อความแจ้งเตือน |
+| **date-fns + react-day-picker** | วันส่งงาน |
+
+### ฝั่งข้อมูลและดีพลอย
+
+| เครื่องมือ | ใช้ทำอะไร |
+| --- | --- |
+| **Supabase Auth** | สมัคร เข้าสู่ระบบ รีเซ็ตรหัสผ่าน |
+| **Supabase Postgres** | เก็บโปรไฟล์ ทีม สมาชิก งาน |
+| **Supabase Realtime** | ซิงก์บอร์ดเมื่อมีคนแก้พร้อมกัน |
+| **Vercel** | โฮสต์เว็บ production และ rewrite SPA |
+
+### สคริปต์ npm
 
 ```bash
-git clone https://github.com/your-username/all-work-app.git
-cd all-work-app
+npm run dev       # เปิดเครื่องพัฒนา ที่ http://localhost:5173
+npm run build     # สร้างไฟล์ production ในโฟลเดอร์ dist
+npm run preview   # ดูผล build บนเครื่องตัวเอง
+npm run lint      # ตรวจโค้ดด้วย ESLint
 ```
 
-**2. Install Dependencies**
+---
+
+## โครงสร้างโปรเจกต์
+
+```text
+all-work-app/
+├── public/                      # ไฟล์สาธารณะ เช่น favicon
+├── src/
+│   ├── App.jsx                  # เส้นทางหลัก และกันหน้าที่ต้องล็อกอิน
+│   ├── main.jsx                 # จุดเริ่มต้น React
+│   ├── index.css                # สไตล์รวม + ธีม
+│   ├── context/
+│   │   └── AuthContext.jsx      # session, โปรไฟล์, ล็อกอิน/ล็อกเอาต์
+│   ├── lib/
+│   │   ├── supabaseClient.js    # ต่อกับ Supabase
+│   │   ├── boardApi.js          # ทีม บอร์ด งาน เชิญสมาชิก ลบทีม
+│   │   └── utils.js             # helper เช่น ชื่อย่อ, คอลัมน์เริ่มต้น
+│   ├── pages/
+│   │   ├── LoginPage.jsx        # สมัคร เข้าสู่ระบบ ลืมรหัสผ่าน
+│   │   ├── TeamPage.jsx         # รายการทีม สร้างทีม ลบทีม
+│   │   └── BoardPage.jsx        # บอร์ดคัมบังของทีม
+│   └── components/
+│       ├── TaskDetailModal.jsx
+│       ├── TeamSettingsModal.jsx
+│       ├── ProfileSettingsModal.jsx
+│       ├── mode-toggle.jsx
+│       ├── theme-provider.jsx
+│       └── ui/                  # คอมโพเนนต์ shadcn/ui
+├── supabase/
+│   └── schema.sql               # ตาราง, trigger, RLS, ฟังก์ชันเชิญสมาชิก
+├── .env.example                 # ตัวอย่างตัวแปรสภาพแวดล้อม
+├── vercel.json                  # rewrite ให้รีเฟรช /login และ /board/:id ได้
+├── vite.config.js
+├── tailwind.config.js
+├── package.json
+└── README.md
+```
+
+### หน้าที่ของไฟล์หลัก
+
+| ไฟล์ | หน้าที่ |
+| --- | --- |
+| `src/pages/LoginPage.jsx` | ฟอร์มสมัคร เข้าสู่ระบบ กู้รหัสผ่าน |
+| `src/pages/TeamPage.jsx` | หน้าแรกหลังล็อกอิน รายการทีม |
+| `src/pages/BoardPage.jsx` | บอร์ดงาน ลากวาง ค้นหา กรอง |
+| `src/lib/boardApi.js` | คุยกับฐานข้อมูลเรื่องทีม บอร์ด งาน |
+| `src/context/AuthContext.jsx` | สถานะผู้ใช้ปัจจุบันทั้งแอป |
+| `supabase/schema.sql` | สคีมาเต็ม รันใน SQL Editor ของ Supabase ได้ซ้ำ |
+
+---
+
+## เส้นทางในแอป
+
+```text
+/login              สมัคร / เข้าสู่ระบบ / ลืมรหัสผ่าน
+/                   รายการทีมของฉัน          (ต้องล็อกอิน)
+/board/:teamId      บอร์ดงานของทีม          (ต้องเป็นสมาชิกทีม)
+เส้นทางอื่น           ส่งกลับไป /
+```
+
+`vercel.json` ตั้ง rewrite ทุกพาธไปที่ `index.html` เพื่อให้รีเฟรชหน้า `/login` หรือ `/board/15` แล้วไม่เจอ 404
+
+---
+
+## ติดตั้งและรันเอง
+
+### สิ่งที่ต้องมีก่อน
+
+- Node.js 18 ขึ้นไป (แนะนำ 20+)
+- npm
+- บัญชี [Supabase](https://supabase.com/)
+
+### 1. โคลนและติดตั้งแพ็กเกจ
 
 ```bash
+git clone https://github.com/Phongphisut-Khenchat-Personal/all-work-app.git
+cd all-work-app
 npm install
 ```
 
-**3. Environment Variables**
+### 2. ตั้งค่าสภาพแวดล้อม
 
-คัดลอก `.env.example` เป็น `.env` แล้วใส่ค่าจาก Supabase:
+คัดลอก `.env.example` เป็น `.env` แล้วใส่ค่าจาก Supabase → Project Settings → API
 
 ```env
-VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_KEY=your_supabase_anon_key
 ```
 
-**4. Database Setup**
+ใช้เฉพาะ **anon / public key** ห้ามใส่ `service_role` และห้าม commit ไฟล์ `.env`
 
-ไปที่ Supabase SQL Editor แล้วรันไฟล์ทั้งหมดใน `supabase/schema.sql`
+### 3. ตั้งฐานข้อมูล
 
-สคริปต์นี้จะสร้างตาราง, trigger สร้างโปรไฟล์/เจ้าของทีม/กระดาน To Do-Doing-Done, RLS และฟังก์ชันเชิญสมาชิก รันซ้ำได้
+เปิด Supabase → SQL Editor แล้วรันทั้งไฟล์ `supabase/schema.sql`
 
-ใน Authentication → URL Configuration เพิ่ม:
+สคริปต์นี้สร้างตาราง, trigger สร้างโปรไฟล์เมื่อสมัคร, เจ้าของทีมเมื่อสร้างทีม, กระดานเริ่มต้น, RLS และฟังก์ชันเชิญสมาชิก / ออกจากทีม รันซ้ำได้
 
-- Site URL: `http://localhost:5173`
-- Redirect URLs: `http://localhost:5173/login` (และโดเมน production ถ้ามี)
+### 4. ตั้งค่า Auth URL
 
-**5. Run Development Server**
+ใน Supabase → Authentication → URL Configuration
+
+| ค่า | ตัวอย่าง |
+| --- | --- |
+| Site URL | `http://localhost:5173` หรือ `https://all-work-app.vercel.app` |
+| Redirect URLs | `http://localhost:5173/login` และ `https://all-work-app.vercel.app/login` |
+
+ถ้าเปิด Confirm email ไว้ ผู้ใช้ต้องกดลิงก์ในอีเมลก่อนเข้าสู่ระบบได้
+
+### 5. เปิดเครื่องพัฒนา
 
 ```bash
 npm run dev
 ```
 
-เปิด browser ที่ `http://localhost:5173`
+เปิดเบราว์เซอร์ที่ [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## 📸 Screenshots
+## ฐานข้อมูล
+
+```text
+auth.users
+    └── profiles          ชื่อ อีเมล ตำแหน่ง
+            │
+teams ──────┼── team_members     เจ้าของ / สมาชิก
+            │
+            ├── board_columns    ชื่อกระดานและลำดับ (ถ้าใช้สคีมาเต็ม)
+            └── tasks            งาน ความสำคัญ วันส่ง ผู้รับผิดชอบ
+```
+
+| ตาราง | เก็บอะไร |
+| --- | --- |
+| `profiles` | ข้อมูลผู้ใช้ที่แสดงในแอป |
+| `teams` | ชื่อทีม |
+| `team_members` | ใครอยู่ในทีมไหน และเป็น owner หรือ member |
+| `board_columns` | กระดานของแต่ละทีม |
+| `tasks` | การ์ดงาน |
+
+แอปตรวจได้เองว่าฐานข้อมูลมีตาราง `board_columns` หรือยัง  
+ถ้ายังไม่มี จะใช้โหมดสำรองกับ `tasks.status` (`todo` / `doing` / `done`) และยังเพิ่มกระดานเองได้
+
+สิทธิ์ที่ออกแบบไว้
+
+- สมาชิกเห็นเฉพาะทีมที่ตัวเองอยู่
+- ทุกคนในทีมสร้าง แก้ ย้าย ลบงานได้
+- เชิญสมาชิก / นำออก / ลบทีม เป็นของเจ้าของทีม
+
+---
+
+## ดีพลอย
+
+โปรเจกต์นี้อัปขึ้น GitHub แล้ว Vercel ดึงจากสาขา `main` ไปที่
+
+**[https://all-work-app.vercel.app/](https://all-work-app.vercel.app/)**
+
+ถ้าจะดีพลอยโปรเจกต์ใหม่เอง
+
+1. Push โค้ดขึ้น GitHub
+2. Import โปรเจกต์ใน Vercel (Framework: Vite)
+3. ใส่ Environment Variables ชุดเดียวกับ `.env`
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_KEY`
+4. เพิ่มโดเมน Vercel ใน Supabase Redirect URLs
+
+หลัง push `main` เว็บทดลองจะอัปเดตเองในไม่กี่นาที ถ้ายังเห็นของเก่าให้รีเฟรชแบบแข็ง (Ctrl+F5)
+
+---
+
+## แก้ปัญหาที่พบบ่อย
+
+| อาการ | สิ่งที่มักเป็นสาเหตุ | วิธีแก้ |
+| --- | --- | --- |
+| สมัครแล้วเข้าไม่ได้ | ต้องยืนยันอีเมล | เปิดเมล กดลิงก์ยืนยัน แล้วค่อยล็อกอิน |
+| เชิญเพื่อนไม่ได้ | เพื่อนยังไม่มีบัญชี หรืออีเมลไม่ตรง | ให้เพื่อนสมัครก่อน แล้วเชิญอีเมลนั้น |
+| เข้าบอร์ดแล้วเด้งกลับ | ยังไม่ใช่สมาชิกทีม | ให้เจ้าของทีมเชิญอีเมลของคุณ |
+| รีเฟรช `/login` แล้ว 404 | โฮสต์ไม่ rewrite SPA | ใช้ `vercel.json` ตามในรีโปนี้ |
+| เว็บทดลองยังเป็นของเก่า | แคชเบราว์เซอร์ | Ctrl+F5 หรือปิดแท็บแล้วเปิดใหม่ |
+
+---
+
+## สิทธิ์ในทีมแบบย่อ
+
+| การกระทำ | เจ้าของทีม | สมาชิก |
+| --- | --- | --- |
+| เข้าบอร์ด ดูงาน เพิ่ม/ย้าย/ลบงาน | ได้ | ได้ |
+| เพิ่ม เปลี่ยนชื่อ ลบกระดาน | ได้ | ได้ |
+| เชิญ / นำสมาชิกออก | ได้ | ไม่ได้ |
+| ลบทีม | ได้ | ไม่ได้ |
+| ออกจากทีม | ใช้การลบทีมแทน | ได้ |
+
+---
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/b16ff12a-b1c3-487c-820f-8fdd794bf944" alt="All Work Screenshot" width="100%"/>
-</div>
 
----
+**All Work** · ทำในประเทศไทย
 
-## 📦 Project Structure
-
-```
-all-work-app/
-├── src/
-│   ├── components/      # React components
-│   ├── context/        # Auth state
-│   ├── lib/            # Utilities & Supabase client
-│   ├── pages/          # Login, teams, board
-│   └── App.jsx
-├── supabase/
-│   └── schema.sql      # Tables, RLS, triggers
-├── public/
-├── .env.example
-└── package.json
-```
-
----
-
-
-**Made with ❤️ in Thailand**
+[ทดลองใช้](https://all-work-app.vercel.app/) · [GitHub](https://github.com/Phongphisut-Khenchat-Personal/all-work-app)
 
 </div>
