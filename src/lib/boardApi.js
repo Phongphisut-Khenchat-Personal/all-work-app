@@ -118,6 +118,30 @@ export async function createTeamWithOwner(name, userId) {
   return { data, error: null }
 }
 
+export async function deleteTeam(teamId) {
+  const id = Number(teamId)
+
+  const { error: tasksError } = await supabase.from('tasks').delete().eq('team_id', id)
+  if (tasksError) return { error: tasksError }
+
+  if (await detectBoardColumnsTable()) {
+    const { error: colsError } = await supabase.from('board_columns').delete().eq('team_id', id)
+    if (colsError) return { error: colsError }
+  }
+
+  const { error: membersError } = await supabase.from('team_members').delete().eq('team_id', id)
+  if (membersError) return { error: membersError }
+
+  try {
+    localStorage.removeItem(extraColumnsKey(teamId))
+    localStorage.removeItem(labelsKey(teamId))
+  } catch {
+    // ignore storage errors
+  }
+
+  return supabase.from('teams').delete().eq('id', id)
+}
+
 export async function loadColumns(teamId, tasks = []) {
   const hasTable = await detectBoardColumnsTable()
   if (hasTable) {

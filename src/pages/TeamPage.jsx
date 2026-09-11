@@ -14,7 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { ProfileSettingsModal } from "@/components/ProfileSettingsModal"
 import { getInitials } from '@/lib/utils'
-import { createTeamWithOwner, ensureTeamMembership } from '@/lib/boardApi'
+import { createTeamWithOwner, deleteTeam, ensureTeamMembership } from '@/lib/boardApi'
 import { Label } from "@/components/ui/label"
 
 function DeleteZoneTeam({ activeId }) {
@@ -168,7 +168,7 @@ export default function TeamPage() {
   }
 
   async function handleDeleteTeam(teamId, teamName) {
-    const { error } = await supabase.from('teams').delete().eq('id', teamId)
+    const { error } = await deleteTeam(teamId)
     if (!error) {
       toast.success(`ลบทีม "${teamName}" สำเร็จ!`)
       fetchTeams()
