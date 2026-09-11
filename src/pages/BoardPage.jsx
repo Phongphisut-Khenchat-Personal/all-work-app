@@ -30,6 +30,7 @@ import {
     deleteColumnRecord,
     moveTasksToColumn,
     ensureTeamMembership,
+    statusPayloadForColumn,
 } from '@/lib/boardApi'
 
 function DeleteZone({ activeId }) {
@@ -374,8 +375,11 @@ export default function BoardPage() {
         const column = columns.find(c => keysMatch(c.id, columnId))
         const previous = tasks.find(t => t.id === taskId)
         if (!column || !previous) return
-        setTasks(prev => prev.map(t => t.id === taskId ? { ...t, column_id: column.id, status: String(column.id) } : t))
-        const { error } = await moveTask(taskId, column, boardMode)
+        const next = boardMode === 'db'
+            ? { ...previous, column_id: column.id }
+            : { ...previous, ...statusPayloadForColumn(column, previous.description) }
+        setTasks(prev => prev.map(t => t.id === taskId ? next : t))
+        const { error } = await moveTask(taskId, column, boardMode, previous)
         if (error) {
             setTasks(prev => prev.map(t => t.id === taskId ? previous : t))
             toast.error("ย้ายงานไม่สำเร็จ: " + error.message)
@@ -399,7 +403,7 @@ export default function BoardPage() {
         if (!column) return
         const previous = columns
         setColumns(prev => prev.map(c => keysMatch(c.id, columnId) ? { ...c, name } : c))
-        const { error } = await renameColumn(column, name, boardMode, teamId)
+        const { error } = await renameColumn(column, name, boardMode, teamId, tasks)
         if (error) {
             setColumns(previous)
             toast.error("เปลี่ยนชื่อไม่สำเร็จ: " + error.message)
@@ -433,7 +437,7 @@ export default function BoardPage() {
         const destination = columns.find(c => keysMatch(c.id, moveToColumnId))
 
         if (taskIds.length && destination) {
-            const { error: moveError } = await moveTasksToColumn(taskIds, destination, boardMode)
+            const { error: moveError } = await moveTasksToColumn(taskIds, destination, boardMode, tasks)
             if (moveError) {
                 toast.error("ย้ายงานก่อนลบไม่สำเร็จ: " + moveError.message)
                 return
@@ -467,7 +471,7 @@ export default function BoardPage() {
 
         const columnId = over.data.current?.columnId
         const current = tasks.find(t => t.id === taskId)
-        if (taskId && columnId && current && current.column_id !== columnId) {
+        if (taskId && columnId && current && !keysMatch(taskBoardKey(current), columnId)) {
             await handleMoveTask(taskId, columnId)
         }
     }

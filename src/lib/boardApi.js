@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabaseClient'
 import { DEFAULT_BOARD_COLUMNS } from '@/lib/utils'
 
 const extraColumnsKey = (teamId) => `allwork-extra-columns-${teamId}`
+const labelsKey = (teamId) => `allwork-col-labels-${teamId}`
+const BOARD_MARK_RE = /^<!--allwork-board:([\s\S]*?)-->\n?/
+const DEFAULT_STATUS_IDS = new Set(['todo', 'doing', 'done'])
 
 export const STATUS_COLUMNS = DEFAULT_BOARD_COLUMNS.map((col) => ({
   id: col.name === 'To Do' ? 'todo' : col.name === 'Doing' ? 'doing' : 'done',
@@ -9,9 +12,42 @@ export const STATUS_COLUMNS = DEFAULT_BOARD_COLUMNS.map((col) => ({
   position: col.position,
 }))
 
+export function isDefaultStatusColumn(id) {
+  return DEFAULT_STATUS_IDS.has(String(id))
+}
+
+export function stripBoardMark(description = '') {
+  return String(description || '').replace(BOARD_MARK_RE, '')
+}
+
+export function applyBoardMark(description = '', columnName) {
+  const body = stripBoardMark(description)
+  return `<!--allwork-board:${columnName}-->${body ? `\n${body}` : ''}`
+}
+
+export function parseBoardMark(description = '') {
+  const match = String(description || '').match(BOARD_MARK_RE)
+  return match ? match[1] : null
+}
+
 export function taskBoardKey(task) {
   if (task?.column_id != null && task.column_id !== '') return task.column_id
+  const marked = parseBoardMark(task?.description)
+  if (marked) return marked
   return task?.status || 'todo'
+}
+
+export function statusPayloadForColumn(column, currentDescription = '') {
+  if (isDefaultStatusColumn(column.id)) {
+    return {
+      status: String(column.id),
+      description: stripBoardMark(currentDescription),
+    }
+  }
+  return {
+    status: 'todo',
+    description: applyBoardMark(currentDescription, column.name || column.id),
+  }
 }
 
 export function keysMatch(a, b) {
@@ -100,7 +136,16 @@ export async function loadColumns(teamId, tasks = []) {
     if (!error) return { mode: 'db', columns: data || [] }
   }
 
-  const known = new Map(STATUS_COLUMNS.map((col) => [String(col.id), { ...col }]))
+  let labels = {}
+  try {
+    labels = JSON.parse(localStorage.getItem(labelsKey(teamId)) || '{}')
+  } catch {
+    labels = {}
+  }
+  const known = new Map(STATUS_COLUMNS.map((col) => [String(col.id), {
+    ...col,
+    name: labels[col.id] || col.name,
+  }]))
   for (const task of tasks) {
     const key = String(taskBoardKey(task))
     if (!known.has(key)) {
@@ -144,7 +189,7 @@ export async function addColumn(teamId, name, mode, existing) {
   return { data: { id: name, name, position: existing.length }, error: null }
 }
 
-export async function renameColumn(column, name, mode, teamId) {
+export async function renameColumn(column, name, mode, teamId, tasks = []) {
   if (mode === 'db') {
     return supabase.from('board_columns').update({ name }).eq('id', column.id)
   }
@@ -159,15 +204,44 @@ export async function renameColumn(column, name, mode, teamId) {
     )
   )
 
-  return supabase.from('tasks').update({ status: name }).eq('team_id', teamId).eq('status', String(column.id))
+  if (isDefaultStatusColumn(column.id)) {
+    let labels = {}
+    try {
+      labels = JSON.parse(localStorage.getItem(labelsKey(teamId)) || '{}')
+    } catch {
+      labels = {}
+    }
+    labels[column.id] = name
+    localStorage.setItem(labelsKey(teamId), JSON.stringify(labels))
+    return { error: null }
+  }
+
+  const toUpdate = tasks.filter((task) => String(taskBoardKey(task)) === String(column.id))
+  for (const task of toUpdate) {
+    const { error } = await supabase
+      .from('tasks')
+      .update(statusPayloadForColumn({ id: name, name }, task.description))
+      .eq('id', task.id)
+    if (error) return { error }
+  }
+  return { error: null }
 }
 
-export async function moveTasksToColumn(taskIds, target, mode) {
+export async function moveTasksToColumn(taskIds, target, mode, tasks = []) {
   if (!taskIds.length) return { error: null }
   if (mode === 'db') {
     return supabase.from('tasks').update({ column_id: Number(target.id) }).in('id', taskIds)
   }
-  return supabase.from('tasks').update({ status: String(target.id) }).in('id', taskIds)
+  const byId = new Map(tasks.map((task) => [task.id, task]))
+  for (const id of taskIds) {
+    const task = byId.get(id)
+    const { error } = await supabase
+      .from('tasks')
+      .update(statusPayloadForColumn(target, task?.description))
+      .eq('id', id)
+    if (error) return { error }
+  }
+  return { error: null }
 }
 
 export async function deleteColumnRecord(column, mode, teamId) {
@@ -188,25 +262,18 @@ export async function insertTask({ title, teamId, userId, column, mode }) {
     team_id: teamId,
     assignee_id: userId,
     priority: 'medium',
-    status: mode === 'db'
-      ? 'todo'
-      : (['todo', 'doing', 'done'].includes(String(column.id)) ? String(column.id) : String(column.name || column.id)),
-  }
-  if (mode === 'db') {
-    row.column_id = Number(column.id)
-    row.created_by = userId
+    ...(mode === 'db'
+      ? { status: 'todo', column_id: Number(column.id), created_by: userId }
+      : statusPayloadForColumn(column, '')),
   }
   return supabase.from('tasks').insert([row]).select().single()
 }
 
-export async function moveTask(taskId, column, mode) {
+export async function moveTask(taskId, column, mode, task) {
   if (mode === 'db') {
     return supabase.from('tasks').update({ column_id: Number(column.id) }).eq('id', taskId)
   }
-  const status = ['todo', 'doing', 'done'].includes(String(column.id))
-    ? String(column.id)
-    : String(column.name || column.id)
-  return supabase.from('tasks').update({ status }).eq('id', taskId)
+  return supabase.from('tasks').update(statusPayloadForColumn(column, task?.description)).eq('id', taskId)
 }
 
 export async function leaveTeam(teamId, userId) {

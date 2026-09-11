@@ -12,6 +12,7 @@ import { format } from "date-fns"
 import { th } from "date-fns/locale"
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from "sonner"
+import { statusPayloadForColumn, stripBoardMark, taskBoardKey } from '@/lib/boardApi'
 
 export function TaskDetailModal({ task, isOpen, onClose, onUpdate, members = [], columns = [], boardMode = 'status' }) {
     return (
@@ -33,9 +34,9 @@ export function TaskDetailModal({ task, isOpen, onClose, onUpdate, members = [],
 
 function TaskDetailForm({ task, onClose, onUpdate, members, columns, boardMode }) {
     const [title, setTitle] = useState(task.title || '')
-    const [description, setDescription] = useState(task.description || '')
+    const [description, setDescription] = useState(stripBoardMark(task.description || ''))
     const [priority, setPriority] = useState(task.priority || 'medium')
-    const [columnId, setColumnId] = useState(String(task.column_id ?? task.status ?? columns[0]?.id ?? ''))
+    const [columnId, setColumnId] = useState(String(task.column_id ?? taskBoardKey(task) ?? columns[0]?.id ?? ''))
     const [assigneeId, setAssigneeId] = useState(task.assignee_id || 'unassigned')
     const [dueDate, setDueDate] = useState(task.due_date ? new Date(task.due_date) : undefined)
     const [loading, setLoading] = useState(false)
@@ -59,7 +60,9 @@ function TaskDetailForm({ task, onClose, onUpdate, members, columns, boardMode }
         if (boardMode === 'db') {
             updates.column_id = columnId ? Number(columnId) : task.column_id
         } else {
-            updates.status = columnId
+            const column = columns.find((col) => String(col.id) === String(columnId))
+                || { id: columnId, name: columnId }
+            Object.assign(updates, statusPayloadForColumn(column, description))
         }
         const { error } = await supabase.from('tasks').update(updates).eq('id', task.id)
 
