@@ -9,19 +9,18 @@ import { useAuth } from '@/context/AuthContext'
 import { toast } from "sonner"
 
 export function ProfileSettingsModal({ isOpen, onClose }) {
-    const { user } = useAuth()
+    const { user, refreshProfile } = useAuth()
     const [firstName, setFirstName] = useState('')
     const [lastName, setLastName] = useState('')
     const [position, setPosition] = useState('')
     const [loading, setLoading] = useState(false)
 
-    // โหลดข้อมูลเดิมเมื่อเปิด Modal
-    useEffect(() => {
-        if (isOpen && user) fetchProfile()
-    }, [isOpen, user])
-
     async function fetchProfile() {
-        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+        if (error) {
+            toast.error('โหลดโปรไฟล์ไม่สำเร็จ: ' + error.message)
+            return
+        }
         if (data) {
             setFirstName(data.first_name || '')
             setLastName(data.last_name || '')
@@ -29,25 +28,29 @@ export function ProfileSettingsModal({ isOpen, onClose }) {
         }
     }
 
+    useEffect(() => {
+        if (isOpen && user) fetchProfile()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, user])
+
     async function handleSave() {
         setLoading(true)
         const updates = {
             id: user.id,
+            email: user.email,
             first_name: firstName,
             last_name: lastName,
             position: position,
-            // อัปเดตชื่อที่แสดง (Display Name) ให้เป็น "ชื่อ นามสกุล" หรือใช้อีเมลถ้าไม่มีชื่อ
-            display_name: `${firstName} ${lastName}`.trim() || user.email.split('@')[0], 
+            display_name: `${firstName} ${lastName}`.trim() || user.email.split('@')[0],
             updated_at: new Date(),
         }
 
         const { error } = await supabase.from('profiles').upsert(updates)
 
         if (!error) {
+            await refreshProfile(user.id)
             toast.success("บันทึกข้อมูลโปรไฟล์เรียบร้อย")
             onClose()
-            // รีโหลดหน้าเพื่อให้ข้อมูลใหม่แสดงผลทันที
-            window.location.reload() 
         } else {
             toast.error("บันทึกไม่สำเร็จ: " + error.message)
         }
@@ -64,7 +67,6 @@ export function ProfileSettingsModal({ isOpen, onClose }) {
                 </DialogHeader>
                 
                 <div className="grid gap-5 py-4">
-                    {/* Email (Read-only) */}
                     <div className="grid gap-2">
                         <Label className="text-muted-foreground">อีเมล (แก้ไขไม่ได้)</Label>
                         <div className="relative">
@@ -73,11 +75,11 @@ export function ProfileSettingsModal({ isOpen, onClose }) {
                         </div>
                     </div>
 
-                    {/* ชื่อ - นามสกุล */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label>ชื่อจริง</Label>
+                            <Label htmlFor="profile-first-name">ชื่อจริง</Label>
                             <Input 
+                                id="profile-first-name"
                                 value={firstName} 
                                 onChange={e => setFirstName(e.target.value)} 
                                 placeholder="เช่น สมชาย" 
@@ -85,8 +87,9 @@ export function ProfileSettingsModal({ isOpen, onClose }) {
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label>นามสกุล</Label>
+                            <Label htmlFor="profile-last-name">นามสกุล</Label>
                             <Input 
+                                id="profile-last-name"
                                 value={lastName} 
                                 onChange={e => setLastName(e.target.value)} 
                                 placeholder="เช่น ใจดี" 
@@ -95,12 +98,12 @@ export function ProfileSettingsModal({ isOpen, onClose }) {
                         </div>
                     </div>
 
-                    {/* ตำแหน่ง */}
                     <div className="grid gap-2">
-                        <Label>ตำแหน่งงาน</Label>
+                        <Label htmlFor="profile-position">ตำแหน่งงาน</Label>
                         <div className="relative">
                             <Briefcase className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input 
+                                id="profile-position"
                                 value={position} 
                                 onChange={e => setPosition(e.target.value)} 
                                 className="pl-9 bg-background" 

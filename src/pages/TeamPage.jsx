@@ -2,19 +2,20 @@ import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { DndContext, useDraggable, useDroppable, DragOverlay, useSensor, useSensors, PointerSensor } from '@dnd-kit/core' // 🟢 เพิ่ม useSensor, useSensors, PointerSensor
+import { DndContext, useDraggable, useDroppable, DragOverlay, useSensor, useSensors, PointerSensor } from '@dnd-kit/core'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Plus, Users, LogOut, ArrowRight, Sparkles, Trash2, ShieldAlert, User, Settings } from 'lucide-react'
+import { Plus, Users, LogOut, ArrowRight, Sparkles, Trash2, ShieldAlert, User, Loader2, Shield } from 'lucide-react'
 import { ModeToggle } from "@/components/mode-toggle"
 import { toast } from "sonner"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { ProfileSettingsModal } from "@/components/ProfileSettingsModal"
+import { getInitials } from '@/lib/utils'
+import { Label } from "@/components/ui/label"
 
-// --- 1. ถังขยะ (Delete Zone) ---
 function DeleteZoneTeam({ activeId }) {
   const { isOver, setNodeRef } = useDroppable({ id: 'team-trash-zone' })
   const isDragging = !!activeId
@@ -38,11 +39,12 @@ function DeleteZoneTeam({ activeId }) {
   )
 }
 
-// --- 2. การ์ดทีมที่ลากได้ (Team Card Draggable) ---
 function TeamCardDraggable({ team, navigate, index }) {
+  const canDelete = team.myRole === 'owner'
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: `team-${team.id}`,
-    data: { teamId: team.id, teamName: team.name }
+    data: { teamId: team.id, teamName: team.name, canDelete },
+    disabled: !canDelete,
   })
 
   const style = {
@@ -56,7 +58,6 @@ function TeamCardDraggable({ team, navigate, index }) {
         onClick={() => navigate(`/board/${team.id}`)}
         className="group h-full bg-gradient-to-br from-card to-card/80 border-border/50 cursor-pointer hover:border-primary/40 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden relative animate-in fade-in slide-in-from-bottom-4"
       >
-        {/* Decorative Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/10 transition-all duration-300" />
 
         <CardContent className="p-6 relative z-10 flex flex-col h-full min-h-[160px]">
@@ -64,8 +65,13 @@ function TeamCardDraggable({ team, navigate, index }) {
             <div className="p-3 bg-background/80 backdrop-blur-sm rounded-xl border border-border/50 text-muted-foreground group-hover:text-primary group-hover:border-primary/30 group-hover:shadow-lg transition-all duration-300">
               <Users size={24} />
             </div>
-            <div className="p-2 rounded-lg bg-background/50 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-300">
-              <ArrowRight size={20} />
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground bg-background/70 px-2 py-1 rounded-md border border-border/50">
+                {canDelete ? 'เจ้าของ' : 'สมาชิก'}
+              </span>
+              <div className="p-2 rounded-lg bg-background/50 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-300">
+                <ArrowRight size={20} />
+              </div>
             </div>
           </div>
 
@@ -74,7 +80,7 @@ function TeamCardDraggable({ team, navigate, index }) {
               {team.name}
             </h3>
             <p className="text-sm text-muted-foreground">
-              คลิกเพื่อเข้าสู่พื้นที่ทำงาน
+              {canDelete ? 'ลากไปถังขยะเพื่อลบทีม' : 'คลิกเพื่อเข้าสู่พื้นที่ทำงาน'}
             </p>
           </div>
         </CardContent>
@@ -83,21 +89,20 @@ function TeamCardDraggable({ team, navigate, index }) {
   )
 }
 
-// --- Main Page ---
 export default function TeamPage() {
   const [teams, setTeams] = useState([])
   const [newTeamName, setNewTeamName] = useState('')
+  const [loadingTeams, setLoadingTeams] = useState(true)
+  const [creating, setCreating] = useState(false)
 
   const [activeId, setActiveId] = useState(null)
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [teamToDelete, setTeamToDelete] = useState(null);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
+  const [teamToDelete, setTeamToDelete] = useState(null)
+  const [confirmTeamName, setConfirmTeamName] = useState('')
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
-  const [myProfile, setMyProfile] = useState(null)
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
 
-  // 🟢 เพิ่ม Sensors เพื่อแก้ปัญหา "คลิกไม่ได้"
-  // ตั้งค่าให้ต้องลากเกิน 8px ถึงจะนับว่าเป็นการลาก (ถ้าขยับน้อยกว่านั้นคือกดคลิก)
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -106,27 +111,36 @@ export default function TeamPage() {
     })
   )
 
-  useEffect(() => {
-    async function fetchMyProfile() {
-      if (!user) return
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      setMyProfile(data)
-    }
-    fetchMyProfile()
-  }, [user])
-
   const activeTeam = useMemo(() => {
     if (!activeId) return null
     const id = activeId.toString().replace('team-', '')
     return teams.find(t => t.id.toString() === id)
   }, [activeId, teams])
 
-  useEffect(() => { fetchTeams() }, [])
-
   async function fetchTeams() {
-    const { data } = await supabase.from('teams').select('*').order('id')
-    setTeams(data || [])
+    setLoadingTeams(true)
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('role, team:teams(*)')
+      .eq('user_id', user.id)
+
+    if (error) {
+      toast.error('โหลดทีมไม่สำเร็จ: ' + error.message)
+      setTeams([])
+    } else {
+      const next = (data || [])
+        .filter(row => row.team)
+        .map(row => ({ ...row.team, myRole: row.role }))
+        .sort((a, b) => a.id - b.id)
+      setTeams(next)
+    }
+    setLoadingTeams(false)
   }
+
+  useEffect(() => {
+    if (user) fetchTeams()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   async function handleCreateTeam() {
     if (!newTeamName.trim()) {
@@ -134,10 +148,12 @@ export default function TeamPage() {
       return
     }
 
-    const { error } = await supabase.from('teams').insert([{ name: newTeamName }])
+    setCreating(true)
+    const { error } = await supabase.from('teams').insert([{ name: newTeamName.trim() }])
+    setCreating(false)
 
     if (!error) {
-      toast.success(`สร้างทีม "${newTeamName}" สำเร็จ!`)
+      toast.success(`สร้างทีม "${newTeamName.trim()}" สำเร็จ!`)
       setNewTeamName('')
       fetchTeams()
     } else {
@@ -150,24 +166,20 @@ export default function TeamPage() {
   }
 
   async function handleDeleteTeam(teamId, teamName) {
-    const { count, error: countError } = await supabase.from('tasks').select('*', { count: 'exact' }).eq('team_id', teamId)
-    if (countError) { toast.error("Error: ตรวจสอบงานไม่สำเร็จ"); return }
-
-    if (count > 0) {
-      toast.error(`ลบทีม "${teamName}" ไม่ได้!`, { description: `มีงานค้างอยู่ ${count} งาน กรุณาลบงานในบอร์ดออกก่อน` })
-      return
-    }
-
     const { error } = await supabase.from('teams').delete().eq('id', teamId)
-    if (!error) { toast.success(`ลบทีม "${teamName}" สำเร็จ!`); fetchTeams() }
-    else { toast.error("ลบทีมไม่สำเร็จ: " + error.message) }
+    if (!error) {
+      toast.success(`ลบทีม "${teamName}" สำเร็จ!`)
+      fetchTeams()
+    } else {
+      toast.error("ลบทีมไม่สำเร็จ: " + error.message)
+    }
   }
 
   const handleConfirmDelete = async () => {
-    setOpenDeleteDialog(false);
-    if (teamToDelete) await handleDeleteTeam(teamToDelete.teamId, teamToDelete.teamName);
-    setTeamToDelete(null);
-  };
+    setOpenDeleteDialog(false)
+    if (teamToDelete) await handleDeleteTeam(teamToDelete.teamId, teamToDelete.teamName)
+    setTeamToDelete(null)
+  }
 
   const handleDragStart = (event) => setActiveId(event.active.id)
 
@@ -175,21 +187,19 @@ export default function TeamPage() {
     const { active, over } = event
     setActiveId(null)
     if (!over) return
+    if (active.data.current?.canDelete === false) return
     const teamId = active.data.current.teamId
     const teamName = active.data.current.teamName
-    const targetId = over.id
-    if (targetId === 'team-trash-zone') {
-      setTeamToDelete({ teamId, teamName });
-      setOpenDeleteDialog(true);
+    if (over.id === 'team-trash-zone') {
+      setTeamToDelete({ teamId, teamName })
+      setConfirmTeamName('')
+      setOpenDeleteDialog(true)
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 text-foreground relative overflow-hidden transition-colors">
-      
-      {/* 🟢 ส่ง sensors เข้าไปใน DndContext */}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
@@ -198,7 +208,6 @@ export default function TeamPage() {
         <DeleteZoneTeam activeId={activeId} />
 
         <div className="relative z-10 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          {/* Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12 pb-8 border-b border-border/50">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
@@ -224,14 +233,16 @@ export default function TeamPage() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="flex-1 sm:flex-none hover:bg-accent transition-colors gap-2 px-3">
                       <Avatar className="h-6 w-6">
-                        <AvatarFallback className="bg-primary/20 text-primary text-[10px]">ME</AvatarFallback>
+                        <AvatarFallback className="bg-primary/20 text-primary text-[10px]">
+                          {getInitials(profile?.display_name, user?.email)}
+                        </AvatarFallback>
                       </Avatar>
                       <span className="hidden sm:inline">บัญชี</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>
-                      บัญชีของฉัน ({myProfile?.display_name || user?.email})
+                      บัญชีของฉัน ({profile?.display_name || user?.email})
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setIsProfileModalOpen(true)}>
@@ -247,7 +258,6 @@ export default function TeamPage() {
             </div>
           </div>
 
-          {/* Create Team Card */}
           <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 backdrop-blur-sm mb-10 shadow-xl hover:shadow-2xl transition-all duration-300">
             <CardContent className="p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-4">
@@ -264,24 +274,28 @@ export default function TeamPage() {
                 />
                 <Button
                   onClick={handleCreateTeam}
+                  disabled={creating}
                   className="h-12 px-8 font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 w-full sm:w-auto"
                 >
-                  <Plus size={20} className="mr-2" />
+                  {creating ? <Loader2 size={20} className="mr-2 animate-spin" /> : <Plus size={20} className="mr-2" />}
                   สร้างทีม
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Teams Grid */}
           <div className="mb-6">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <span>ทีมทั้งหมด</span>
+              <span>ทีมของฉัน</span>
               <span className="text-lg font-normal text-muted-foreground">({teams.length})</span>
             </h2>
           </div>
 
-          {teams.length > 0 ? (
+          {loadingTeams ? (
+            <div className="flex justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : teams.length > 0 ? (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {teams.map((team, index) => (
                 <TeamCardDraggable
@@ -300,10 +314,10 @@ export default function TeamPage() {
                     <Users size={40} className="text-muted-foreground" />
                   </div>
                   <h3 className="text-xl font-semibold text-muted-foreground">
-                    ยังไม่มีทีมในระบบ
+                    ยังไม่มีทีม
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    เริ่มต้นด้วยการสร้างทีมแรกของคุณด้านบน
+                    สร้างทีมแรกของคุณด้านบน หรือให้เพื่อนเชิญเข้าทีม
                   </p>
                 </div>
               </CardContent>
@@ -311,7 +325,6 @@ export default function TeamPage() {
           )}
         </div>
 
-        {/* Drag Overlay */}
         <DragOverlay>
           {activeId ? (
             <Card className="w-[300px] bg-card border-2 border-primary shadow-2xl opacity-90 cursor-grabbing rotate-3">
@@ -320,6 +333,7 @@ export default function TeamPage() {
                   <div className="p-3 bg-background/80 rounded-xl border border-border/50 text-primary">
                     <Users size={24} />
                   </div>
+                  <Shield className="text-primary" size={18} />
                 </div>
                 <h3 className="text-xl font-bold truncate text-foreground">{activeTeam?.name}</h3>
                 <p className="text-sm text-primary mt-1">กำลังย้าย/ลบ...</p>
@@ -327,27 +341,39 @@ export default function TeamPage() {
             </Card>
           ) : null}
         </DragOverlay>
-
       </DndContext>
 
-      {/* Dialog ยืนยันการลบ */}
-      <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+      <AlertDialog open={openDeleteDialog} onOpenChange={(open) => { setOpenDeleteDialog(open); if (!open) setConfirmTeamName('') }}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center text-lg text-destructive"><ShieldAlert className="mr-2 h-5 w-5" /> ยืนยันการลบ Workspace</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center text-lg text-destructive"><ShieldAlert className="mr-2 h-5 w-5" /> ลบทีมนี้?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
-              คุณแน่ใจหรือไม่ว่าต้องการลบทีม <span className="font-bold text-foreground mx-1">"{teamToDelete?.teamName}"</span>?
-              <br />การกระทำนี้จะลบงานทั้งหมดในทีมและไม่สามารถย้อนกลับได้
+              จะลบทีม <span className="font-bold text-foreground mx-1">"{teamToDelete?.teamName}"</span> พร้อมสมาชิก กระดาน และงานทั้งหมด กู้คืนไม่ได้
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="confirm-team">พิมพ์ชื่อทีม <span className="font-semibold text-foreground">{teamToDelete?.teamName}</span> เพื่อยืนยัน</Label>
+            <Input
+              id="confirm-team"
+              value={confirmTeamName}
+              onChange={(e) => setConfirmTeamName(e.target.value)}
+              placeholder={teamToDelete?.teamName}
+              autoComplete="off"
+            />
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">ลบทิ้ง</AlertDialogAction>
+            <AlertDialogAction
+              disabled={confirmTeamName.trim() !== (teamToDelete?.teamName || '')}
+              onClick={handleConfirmDelete}
+              className="bg-destructive hover:bg-destructive/90 disabled:opacity-50"
+            >
+              ลบทีม
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Profile Settings */}
       <ProfileSettingsModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
